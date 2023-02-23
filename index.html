@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Tower of Hanoi Solver</title>
+    <style>
+        .towers {
+            display: flex;
+            justify-content: space-evenly;
+            margin-block: 10px;
+        }
+
+        .tower {
+            display: inline-grid;
+            height: 200px;
+            width: 10px;
+            min-width: 10px;
+            margin: 0 100px;
+            background-color: #333;
+            position: relative;
+            justify-items: center;
+            justify-content: center;
+            align-items: flex-end;
+            align-content: flex-end;
+        }
+
+        .disc {
+            bottom: 0;
+            height: 20px;
+            border-radius: 10px;
+            background-color: #f00;
+            box-sizing: border-box;
+            padding: 5px;
+            color: #fff;
+            font-size: 12px;
+            font-weight: bold;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+<h1>Tower of Hanoi Interactive Solver</h1>
+<p>Enter the state the of discs:</p>
+<input type="text" id="disc-input" value="0,0,0,0" onchange="setState()"/>
+<button onclick="solve()">Solve</button>
+<span>Number of steps: <span id="steps"></span></span>
+<div class="towers">
+    <div id="tower-0" class="tower"></div>
+    <div id="tower-1" class="tower"></div>
+    <div id="tower-2" class="tower"></div>
+</div>
+<div class="towers">
+    <div>0</div>
+    <div>1</div>
+    <div>2</div>
+</div>
+
+<script>
+    // each number represents a disc and the value represents the tower it is on
+    state = [0, 0, 0, 0];
+    steps = -1;
+
+    towers = document.getElementsByClassName('tower');
+
+    function setState() {
+        state = document
+                .getElementById('disc-input')
+                .value.split(',')
+                .map((x) => parseInt(x));
+        optimalMove(state);
+        renderState();
+    }
+
+    function renderState() {
+        document.getElementById('steps').innerHTML = steps;
+        document.getElementById('disc-input').value = state.join(',');
+        for (let i = 0; i < towers.length; i++) {
+            towers[i].innerHTML = '';
+        }
+
+        for (let i = 0; i < state.length; i++) {
+            const tower = towers[state[i]];
+            const disc = document.createElement('div');
+            disc.classList.add('disc');
+            disc.style.width = `${50 + i * 20}px`;
+            // disc.style.bottom = `${(state.length - 1 - i) * 20}px`;
+            disc.innerHTML = i + 1;
+            disc.style.backgroundColor = `hsl(${(i / state.length) * 360}, 100%, 50%)`;
+            tower.appendChild(disc);
+        }
+    }
+
+    function p1(n, s, j) {
+        // debugger;
+        let mu = 0;
+        let delta = n + 1;
+        let k = j;
+        for (let d = n; d >= 1; d--) {
+            if (s[d - 1] !== k) {
+                mu = mu + Math.pow(2, d - 1);
+                delta = d - 1;
+                k = 3 - k - s[delta];
+            }
+        }
+        return [mu, delta, 3 - k - s[delta]];
+    }
+
+    function optimalMove(state, to = 2) {
+        const p = p1(state.length, state, to);
+        steps = p[0] - 1;
+        return p;
+    }
+
+    async function solve() {
+        renderState(state);
+        while (state.some((tower) => tower !== 2)) {
+            const [mu, delta, k] = optimalMove(state);
+            state[delta] = k;
+            renderState(state);
+            await new Promise((resolve) => setTimeout(resolve, 500));
+        }
+    }
+
+    setState();
+</script>
+</body>
+</html>
